@@ -4,6 +4,8 @@
 
     <input type="file" id="romInput" onchange="openRomAndStart(event)">
 
+    <canvas width="64" height="704" id="webrioCanvas"></canvas>
+
     <script>
      (async function() {
        const libsm64Initialized = new Promise(resolve => {
@@ -25,11 +27,17 @@
          const heapTexLength = Module.ccall('webrio_get_sm64_texture_length',
                                             'number', [], []);
          const heapTexPtr = Module._malloc(heapTexLength);
+         const heapTex = new Uint8Array(Module.HEAPU8.buffer, heapTexPtr, heapTexLength);
 
          Module._webrio_init(heapRomPtr, heapTexPtr);
+
+         const ctx = webrioCanvas.getContext('2d');
          window.requestAnimationFrame(function tick() {
            Module._webrio_tick();
-           // TODO: Copy heapTex onto canvas
+
+           const imgData = ctx.createImageData(64, 704);
+           imgData.data.set(heapTex);
+           ctx.putImageData(imgData, 0, 0);
 
            window.requestAnimationFrame(tick);
          });

@@ -19,27 +19,26 @@
          const rom = new Uint8Array(buf);
 
          const heapRomPtr = Module._malloc(rom.length);
-         const heapRom = new Uint8Array(module.HEAPU8.buffer, heapRomPtr, rom.length);
+         const heapRom = new Uint8Array(Module.HEAPU8.buffer, heapRomPtr, rom.length);
          heapRom.set(rom);
 
-         const heapTexLength = module.webrio_get_sm64_texture_length();
+         const heapTexLength = Module.ccall('webrio_get_sm64_texture_length',
+                                            'number', [], []);
          const heapTexPtr = Module._malloc(heapTexLength);
-         const heapTex = new Uint8Array(module.HEAPU8.buffer, heapTexPtr, heapTexLength);
 
-         Module.webrio_init(heapRom, heapTex);
-
+         Module._webrio_init(heapRomPtr, heapTexPtr);
          window.requestAnimationFrame(function tick() {
-           Module.webrio_tick();
+           Module._webrio_tick();
            // TODO: Copy heapTex onto canvas
 
            window.requestAnimationFrame(tick);
          });
        };
-
        
        console.log("Hello!");
      })();
     </script>
+
     <script src="webrio.js"></script>
 
   </body>

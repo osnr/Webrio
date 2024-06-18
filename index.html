@@ -1,0 +1,21 @@
+<html>
+  <body>
+    <p>Hello</p>
+
+    <script>
+     (async function() {
+       const libsm64Initialized = new Promise(resolve => {
+         window.Module = {
+           // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
+           onRuntimeInitialized() { resolve(); }
+         };
+       });
+       await libsm64Initialized;
+
+       console.log("Hello!");
+     })();
+    </script>
+    <script src="vendor/libsm64.js"></script>
+
+  </body>
+</html>

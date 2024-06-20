@@ -4,40 +4,34 @@
 
     <input type="file" id="romInput" onchange="openRomAndStart(event)">
 
-    <canvas width="64" height="704" id="webrioCanvas"></canvas>
+    <canvas width="640" height="480" id="webrioCanvas"></canvas>
 
-    <script>
+    <script type="module">
+     import { Renderer } from "./renderer.js";
+     import webrioLoader from "./webrio.js";
+
      (async function() {
-       const libsm64Initialized = new Promise(resolve => {
-         window.Module = {
-           // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
-           onRuntimeInitialized() { resolve(); }
-         };
-       });
-       await libsm64Initialized;
+       const Webrio = await webrioLoader();
 
        window.openRomAndStart = async e => {
          const buf = await e.target.files[0].arrayBuffer();
          const rom = new Uint8Array(buf);
 
-         const heapRomPtr = Module._malloc(rom.length);
-         const heapRom = new Uint8Array(Module.HEAPU8.buffer, heapRomPtr, rom.length);
+         const heapRomPtr = Webrio._malloc(rom.length);
+         const heapRom = new Uint8Array(Webrio.HEAPU8.buffer, heapRomPtr, rom.length);
          heapRom.set(rom);
 
-         const heapTexLength = Module.ccall('webrio_get_sm64_texture_length',
+         const heapTexLength = Webrio.ccall('webrio_get_sm64_texture_length',
                                             'number', [], []);
-         const heapTexPtr = Module._malloc(heapTexLength);
-         const heapTex = new Uint8Array(Module.HEAPU8.buffer, heapTexPtr, heapTexLength);
+         const heapTexPtr = Webrio._malloc(heapTexLength);
 
-         Module._webrio_init(heapRomPtr, heapTexPtr);
+         Webrio._webrio_init(heapRomPtr, heapTexPtr);
 
-         const ctx = webrioCanvas.getContext('2d');
+         const renderer = new Renderer(webrioCanvas);
          window.requestAnimationFrame(function tick() {
-           Module._webrio_tick();
+           Webrio._webrio_tick();
 
-           const imgData = ctx.createImageData(64, 704);
-           imgData.data.set(heapTex);
-           ctx.putImageData(imgData, 0, 0);
+           renderer.draw(mario);
 
            window.requestAnimationFrame(tick);
          });
@@ -46,8 +40,5 @@
        console.log("Hello!");
      })();
     </script>
-
-    <script src="webrio.js"></script>
-
   </body>
 </html>

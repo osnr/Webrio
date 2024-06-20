@@ -13,6 +13,8 @@
      (async function() {
        const Webrio = await webrioLoader();
 
+       const renderer = new Renderer(webrioCanvas);
+
        window.openRomAndStart = async e => {
          const buf = await e.target.files[0].arrayBuffer();
          const rom = new Uint8Array(buf);
@@ -27,7 +29,6 @@
 
          Webrio._webrio_init(heapRomPtr, heapTexPtr);
 
-         const renderer = new Renderer(webrioCanvas);
          window.requestAnimationFrame(function tick() {
            Webrio._webrio_tick();
 

@@ -6,9 +6,13 @@
 
     <canvas width="640" height="480" id="webrioCanvas"></canvas>
 
+    <script src="vendor/gl-matrix.js"></script>
+
     <script type="module">
      import { Renderer } from "./renderer.js";
      import webrioLoader from "./webrio.js";
+
+     const mat4 = glMatrix.mat4;
 
      (async function() {
        const Webrio = await webrioLoader();
@@ -49,21 +53,31 @@
                                    Webrio._webrio_get_sm64_texture_width(),
                                    Webrio._webrio_get_sm64_texture_height());
 
-         window.requestAnimationFrame(function tick() {
-           const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0);
+         const marioPositionPtr = Webrio._malloc(sizeofFloat * 3);
+         const marioPositionArr = new Float32Array(Webrio.HEAPF32.buffer, marioPositionPtr, 3);
 
-           const view = [
-             1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, 0,
-             0, 0, 0, 1,
-           ];
-           const projection = [
-             1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, 0,
-             0, 0, 0, 1,
-           ];
+         let cameraPos = [0, 0, 0]
+         let cameraRot = 0.0;
+
+         let view = Array(16).fill(0);
+         let projection = Array(16).fill(0);
+
+         window.requestAnimationFrame(function tick() {
+           const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0,
+                                                        marioPositionPtr);
+           // cameraRot += x0_axis * dt * 2;
+           cameraPos[0] = marioPositionArr[0] + 1000.0 * Math.cos( cameraRot );
+           cameraPos[1] = marioPositionArr[1] + 200.0;
+           cameraPos[2] = marioPositionArr[2] + 1000.0 * Math.sin( cameraRot );
+
+           mat4.perspective(projection, 45.0, 640.0 / 480.0, 100.0, 20000.0);
+           mat4.translate(view, view, cameraPos);
+           mat4.lookAt(view, cameraPos, marioPositionArr, [0, 1, 0]);
+
+	   // glm_perspective( 45.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 100.0f, 20000.0f, projection );
+           // 	   glm_translate( view, (float*)camPos );
+           // 	   glm_lookat( (float*)camPos, (float*)marioState->position, (vec3){0,1,0}, view );
+
            renderer.draw(view, projection,
                          positionArr, colorArr, normalArr, uvArr,
                          numTrianglesUsed);

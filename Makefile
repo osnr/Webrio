@@ -1,4 +1,4 @@
-webrio.js: webrio.c ~/aux/libsm64/dist/libsm64.so
+webrio.js: webrio.c level.c ~/aux/libsm64/dist/libsm64.so
 	emcc -sEXPORTED_FUNCTIONS=_webrio_init,_webrio_tick,_webrio_get_sm64_texture_width,_webrio_get_sm64_texture_height,_malloc \
 	  	-sEXPORTED_RUNTIME_METHODS=ccall,cwrap \
 		-sEXPORT_ES6=1 -sMODULARIZE -sEXPORT_NAME=webrio \

@@ -11,7 +11,8 @@ void webrio_init(uint8_t* rom, uint8_t* tex,
 // HACK: returns numTrianglesUsed.
 int webrio_tick(float camLookX, float camLookZ,
                 float stickX, float stickY,
-                uint8_t buttonA, uint8_t buttonB, uint8_t buttonZ);
+                uint8_t buttonA, uint8_t buttonB, uint8_t buttonZ,
+                float* outMarioPosition);
 
 int webrio_get_sm64_texture_width();
 int webrio_get_sm64_texture_height();

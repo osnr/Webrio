@@ -53,12 +53,19 @@ export class Renderer {
     const vert = `#version 300 es\n#define VERTEX  \n#define v2f out\n${marioShader}`;
     const frag = `#version 300 es\n#define FRAGMENT  \n#define v2f in\n${marioShader}`;
     const program = this.createProgram(vert, frag);
-    this.marioProgram = program;
+    this.marioProgram = {
+      program,
 
-    // Fill uniforms:
-    this.viewLoc = gl.getUniformLocation(program, 'view');
-    this.projectionLoc = gl.getUniformLocation(program, 'projection');
-    this.marioTexLoc = gl.getUniformLocation(program, 'marioTex');
+      viewLoc: gl.getUniformLocation(program, 'view'),
+      projectionLoc: gl.getUniformLocation(program, 'projection'),
+      marioTexLoc: gl.getUniformLocation(program, 'marioTex'),
+
+      trianglesBuf: gl.createBuffer(),
+      positionLoc: gl.getAttribLocation(program, 'position'),
+      normalLoc: gl.getAttribLocation(program, 'normal'),
+      colorLoc: gl.getAttribLocation(program, 'color'),
+      uvLoc: gl.getAttribLocation(program, 'uv'),
+    };
   }
 
   loadShader(type, source) {
@@ -111,15 +118,48 @@ export class Renderer {
                   level, internalFormat,
                   width, height,
                   border, format, type, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+    const unit = 5; // TODO: organize these
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, this.marioTex);
+
+    gl.useProgram(this.marioProgram.program);
+    gl.uniform1i(this.marioProgram.marioTexLoc, unit);
   }
 
-  draw() {
+  // view and projection are 16-element Float32Arrays (mat4).
+  // trianglesArr is a flattened Float32Array of {vec3 position, vec3 normal,
+  // vec3 color, vec2 uv}.
+  draw(view, projection, trianglesArr) {
     const gl = this.gl;
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.useProgram(this.marioProgram);
-    gl.drawArrays();
+    gl.useProgram(this.marioProgram.program);
+
+    // Set mat4 view
+    gl.uniformMatrix4fv(this.marioProgram.viewLoc,
+                        false, view);
+    // Set mat4 projection
+    gl.uniformMatrix4fv(this.marioProgram.projectionLoc,
+                        false, projection);
+
+    // Pass in Mario triangles:
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.trianglesBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, trianglesArr, gl.STREAM_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram);
+    const stride = (3 + 3 + 3 + 2) * 4;
+    gl.vertexAttribPointer(this.marioProgram.positionLoc,
+                           3, gl.FLOAT, false, stride, 0);
+    gl.vertexAttribPointer(this.marioProgram.normalLoc,
+                           3, gl.FLOAT, false, stride, 3);
+    gl.vertexAttribPointer(this.marioProgram.colorLoc,
+                           3, gl.FLOAT, false, stride, 6);
+    gl.vertexAttribPointer(this.marioProgram.uvLoc,
+                           2, gl.FLOAT, false, stride, 9);
+
+    gl.drawArrays(gl.TRIANGLES, 0, trianglesArr.length / stride);
   }
 };

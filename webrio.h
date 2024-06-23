@@ -4,6 +4,7 @@
 void webrio_init(uint8_t* rom, uint8_t* tex);
 void webrio_tick();
 
-int webrio_get_sm64_texture_length();
+int webrio_get_sm64_texture_width();
+int webrio_get_sm64_texture_height();
 
 #endif

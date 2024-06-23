@@ -45,14 +45,20 @@ v2f vec2 v_uv;
 
 export class Renderer {
   constructor(canv) {
-    this.gl = canv.getContext('webgl2');
-    if (this.gl === null) {
+    const gl = this.gl = canv.getContext('webgl2');
+    if (gl === null) {
       alert('WebGL initialization failed.');
     }
 
     const vert = `#version 300 es\n#define VERTEX  \n#define v2f out\n${marioShader}`;
     const frag = `#version 300 es\n#define FRAGMENT  \n#define v2f in\n${marioShader}`;
-    const program = this.initShaderProgram(vert, frag);
+    const program = this.createProgram(vert, frag);
+    this.marioProgram = program;
+
+    // Fill uniforms:
+    this.viewLoc = gl.getUniformLocation(program, 'view');
+    this.projectionLoc = gl.getUniformLocation(program, 'projection');
+    this.marioTexLoc = gl.getUniformLocation(program, 'marioTex');
   }
 
   loadShader(type, source) {
@@ -70,7 +76,7 @@ export class Renderer {
 
     return shader;
   }
-  initShaderProgram(vertSource, fragSource) {
+  createProgram(vertSource, fragSource) {
     const gl = this.gl;
     const vertexShader = this.loadShader(gl.VERTEX_SHADER, vertSource);
     const fragmentShader = this.loadShader(gl.FRAGMENT_SHADER, fragSource);
@@ -80,10 +86,10 @@ export class Renderer {
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
 
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       alert(
         `Unable to initialize the shader program: ${gl.getProgramInfoLog(
-        shaderProgram,
+        program,
       )}`,
       );
       return null;
@@ -92,11 +98,28 @@ export class Renderer {
     return program;
   }
 
+  loadMarioTexture(data, width, height) {
+    const gl = this.gl;
+    this.marioTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.marioTex);
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const border = 0;
+    const format = gl.RGBA;
+    const type = gl.UNSIGNED_BYTE;
+    gl.texImage2D(gl.TEXTURE_2D,
+                  level, internalFormat,
+                  width, height,
+                  border, format, type, data);
+  }
+
   draw() {
     const gl = this.gl;
-    // Set clear color to black, fully opaque
+
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    // Clear the color buffer with specified clear color
     gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.useProgram(this.marioProgram);
+    gl.drawArrays();
   }
 };

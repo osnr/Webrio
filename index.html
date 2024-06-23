@@ -12,6 +12,7 @@
 
      (async function() {
        const Webrio = await webrioLoader();
+       window.Webrio = Webrio; // for debugging.
 
        const renderer = new Renderer(webrioCanvas);
 
@@ -23,11 +24,16 @@
          const heapRom = new Uint8Array(Webrio.HEAPU8.buffer, heapRomPtr, rom.length);
          heapRom.set(rom);
 
-         const heapTexLength = Webrio.ccall('webrio_get_sm64_texture_length',
-                                            'number', [], []);
+         const heapTexLength = Webrio._webrio_get_sm64_texture_width() *
+               Webrio._webrio_get_sm64_texture_height() * 4;
          const heapTexPtr = Webrio._malloc(heapTexLength);
 
          Webrio._webrio_init(heapRomPtr, heapTexPtr);
+
+         const heapTex = new Uint8Array(Webrio.HEAPU8.buffer, heapTexPtr, heapTexLength);
+         renderer.loadMarioTexture(heapTex,
+                                   Webrio._webrio_get_sm64_texture_width(),
+                                   Webrio._webrio_get_sm64_texture_height());
 
          window.requestAnimationFrame(function tick() {
            Webrio._webrio_tick();

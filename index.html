@@ -28,7 +28,21 @@
                Webrio._webrio_get_sm64_texture_height() * 4;
          const heapTexPtr = Webrio._malloc(heapTexLength);
 
-         Webrio._webrio_init(heapRomPtr, heapTexPtr);
+         const sizeofFloat = 4;
+         const SM64_GEO_MAX_TRIANGLES = 1024;
+         const positionBufPtr = Webrio._malloc(sizeofFloat * 9 * SM64_GEO_MAX_TRIANGLES);
+         const colorBufPtr    = Webrio._malloc(sizeofFloat * 9 * SM64_GEO_MAX_TRIANGLES);
+         const normalBufPtr   = Webrio._malloc(sizeofFloat * 9 * SM64_GEO_MAX_TRIANGLES);
+         const uvBufPtr       = Webrio._malloc(sizeofFloat * 6 * SM64_GEO_MAX_TRIANGLES);
+
+         const positionArr = new Float32Array(Webrio.HEAPF32.buffer, positionBufPtr, 9 * SM64_GEO_MAX_TRIANGLES);
+         const colorArr    = new Float32Array(Webrio.HEAPF32.buffer, colorBufPtr, 9 * SM64_GEO_MAX_TRIANGLES);
+         const normalArr   = new Float32Array(Webrio.HEAPF32.buffer, normalBufPtr, 9 * SM64_GEO_MAX_TRIANGLES);
+         const uvArr       = new Float32Array(Webrio.HEAPF32.buffer, uvBufPtr, 6 * SM64_GEO_MAX_TRIANGLES);
+
+         Webrio._webrio_init(heapRomPtr, heapTexPtr,
+                             positionBufPtr, colorBufPtr,
+                             normalBufPtr, uvBufPtr);
 
          const heapTex = new Uint8Array(Webrio.HEAPU8.buffer, heapTexPtr, heapTexLength);
          renderer.loadMarioTexture(heapTex,
@@ -36,9 +50,23 @@
                                    Webrio._webrio_get_sm64_texture_height());
 
          window.requestAnimationFrame(function tick() {
-           Webrio._webrio_tick();
+           const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0);
 
-           renderer.draw();
+           const view = [
+             1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1, 0,
+             0, 0, 0, 1,
+           ];
+           const projection = [
+             1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1, 0,
+             0, 0, 0, 1,
+           ];
+           renderer.draw(view, projection,
+                         positionArr, colorArr, normalArr, uvArr,
+                         numTrianglesUsed);
 
            window.requestAnimationFrame(tick);
          });

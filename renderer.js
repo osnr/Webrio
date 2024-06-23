@@ -60,11 +60,17 @@ export class Renderer {
       projectionLoc: gl.getUniformLocation(program, 'projection'),
       marioTexLoc: gl.getUniformLocation(program, 'marioTex'),
 
-      trianglesBuf: gl.createBuffer(),
       positionLoc: gl.getAttribLocation(program, 'position'),
+      positionBuf: gl.createBuffer(),
+
       normalLoc: gl.getAttribLocation(program, 'normal'),
+      normalBuf: gl.createBuffer(),
+
       colorLoc: gl.getAttribLocation(program, 'color'),
+      colorBuf: gl.createBuffer(),
+
       uvLoc: gl.getAttribLocation(program, 'uv'),
+      uvBuf: gl.createBuffer(),
     };
   }
 
@@ -129,9 +135,10 @@ export class Renderer {
   }
 
   // view and projection are 16-element Float32Arrays (mat4).
-  // trianglesArr is a flattened Float32Array of {vec3 position, vec3 normal,
-  // vec3 color, vec2 uv}.
-  draw(view, projection, trianglesArr) {
+  // The bufs are flattened Float32Arrays.
+  draw(view, projection,
+       positionArr, colorArr, normalArr, uvArr,
+       numTrianglesUsed) {
     const gl = this.gl;
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -147,19 +154,30 @@ export class Renderer {
                         false, projection);
 
     // Pass in Mario triangles:
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.trianglesBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, trianglesArr, gl.STREAM_DRAW);
-    gl.enableVertexAttribArray(this.marioProgram);
-    const stride = (3 + 3 + 3 + 2) * 4;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.positionBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, positionArr, gl.STREAM_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.positionBuf);
     gl.vertexAttribPointer(this.marioProgram.positionLoc,
-                           3, gl.FLOAT, false, stride, 0);
-    gl.vertexAttribPointer(this.marioProgram.normalLoc,
-                           3, gl.FLOAT, false, stride, 3);
-    gl.vertexAttribPointer(this.marioProgram.colorLoc,
-                           3, gl.FLOAT, false, stride, 6);
-    gl.vertexAttribPointer(this.marioProgram.uvLoc,
-                           2, gl.FLOAT, false, stride, 9);
+                           3, gl.FLOAT, false, 0, 0);
 
-    gl.drawArrays(gl.TRIANGLES, 0, trianglesArr.length / stride);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.colorBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STREAM_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.colorBuf);
+    gl.vertexAttribPointer(this.marioProgram.colorLoc,
+                           3, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.normalBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, normalArr, gl.STREAM_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.normalBuf);
+    gl.vertexAttribPointer(this.marioProgram.normalLoc,
+                           3, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.uvBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, uvArr, gl.STREAM_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.uvBuf);
+    gl.vertexAttribPointer(this.marioProgram.uvLoc,
+                           2, gl.FLOAT, false, 0, 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, numTrianglesUsed);
   }
 };

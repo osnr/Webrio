@@ -4,16 +4,39 @@
 
 int32_t marioId;
 
-void webrio_init(uint8_t* rom, uint8_t* tex) {
+struct SM64MarioGeometryBuffers marioGeometry;
+
+void webrio_init(uint8_t* rom, uint8_t* tex,
+                 // These will get filled in on each tick:
+                 float* positionBuf,
+                 float* colorBuf,
+                 float* normalBuf,
+                 float* uvBuf) {
     sm64_global_init(rom, tex);
 
     /* sm64_static_surfaces_load( surfaces, surfaces_count ); */
 
     marioId = sm64_mario_create( 0, 1000, 0 );
+
+    marioGeometry.position = positionBuf;
+    marioGeometry.color    = colorBuf;
+    marioGeometry.normal   = normalBuf;
+    marioGeometry.uv       = uvBuf;
+    marioGeometry.numTrianglesUsed = 0;
 }
 
-void webrio_tick() {
-    /* sm64_mario_tick(marioId, inputs, outState, outBuffers); */
+// HACK: returns numTrianglesUsed.
+int webrio_tick(float camLookX, float camLookZ,
+                float stickX, float stickY,
+                uint8_t buttonA, uint8_t buttonB, uint8_t buttonZ) {
+    struct SM64MarioInputs inputs = {
+        .camLookX = camLookX, .camLookZ = camLookZ,
+        .stickX = stickX, .stickY = stickY,
+        .buttonA = buttonA, .buttonB = buttonB, .buttonZ = buttonZ
+    };
+    struct SM64MarioState outState;
+    sm64_mario_tick(marioId, &inputs, &outState, &marioGeometry);
+    return marioGeometry.numTrianglesUsed;
 }
 
 int webrio_get_sm64_texture_width() { return SM64_TEXTURE_WIDTH; }

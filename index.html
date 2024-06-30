@@ -5,6 +5,7 @@
     <input type="file" id="romInput" onchange="openRomAndStart(event)">
 
     <canvas width="640" height="480" id="webrioCanvas"></canvas>
+    <div>Status: <div id="statusEl"></div></div>
 
     <script src="vendor/gl-matrix.js"></script>
 
@@ -65,6 +66,12 @@
          window.requestAnimationFrame(function tick() {
            const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0,
                                                         marioPositionPtr);
+           statusEl.innerText = `
+numTrianglesUsed: ${numTrianglesUsed}
+cameraPos: ${cameraPos}
+marioPosition: ${marioPositionArr}
+           `;
+
            // cameraRot += x0_axis * dt * 2;
            cameraPos[0] = marioPositionArr[0] + 1000.0 * Math.cos( cameraRot );
            cameraPos[1] = marioPositionArr[1] + 200.0;

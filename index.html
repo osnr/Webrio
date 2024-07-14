@@ -66,11 +66,6 @@
          window.requestAnimationFrame(function tick() {
            const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0,
                                                         marioPositionPtr);
-           statusEl.innerText = `
-numTrianglesUsed: ${numTrianglesUsed}
-cameraPos: ${cameraPos}
-marioPosition: ${marioPositionArr}
-           `;
 
            // cameraRot += x0_axis * dt * 2;
            cameraPos[0] = marioPositionArr[0] + 1000.0 * Math.cos( cameraRot );
@@ -84,6 +79,15 @@ marioPosition: ${marioPositionArr}
 	   // glm_perspective( 45.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 100.0f, 20000.0f, projection );
            // 	   glm_translate( view, (float*)camPos );
            // 	   glm_lookat( (float*)camPos, (float*)marioState->position, (vec3){0,1,0}, view );
+
+           statusEl.innerText = `
+numTrianglesUsed: ${numTrianglesUsed}
+cameraPos: ${cameraPos}
+marioPosition: ${marioPositionArr}
+
+view: ${view}
+projection: ${projection}
+           `;
 
            renderer.draw(view, projection,
                          positionArr, colorArr, normalArr, uvArr,

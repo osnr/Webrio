@@ -37,7 +37,8 @@ v2f vec2 v_uv;
         float light = .5 + .5 * clamp( dot( v_normal, v_light ), 0., 1. );
         vec4 texColor = texture( marioTex, v_uv );
         vec3 mainColor = mix( v_color, texColor.rgb, texColor.a ); // v_uv.x >= 0. ? texColor.a : 0. );
-        color = vec4( mainColor * light, 1 );
+        // color = vec4( mainColor * light, 1 );
+        color = vec4(1.0, 0, 0, 1.0);
     }
 
 #endif

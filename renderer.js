@@ -37,8 +37,7 @@ v2f vec2 v_uv;
         float light = .5 + .5 * clamp( dot( v_normal, v_light ), 0., 1. );
         vec4 texColor = texture( marioTex, v_uv );
         vec3 mainColor = mix( v_color, texColor.rgb, texColor.a ); // v_uv.x >= 0. ? texColor.a : 0. );
-        // color = vec4( mainColor * light, 1 );
-        color = vec4(1.0, 0, 0, 1.0);
+        color = vec4( mainColor * light, 1 );
     }
 
 #endif
@@ -156,26 +155,26 @@ export class Renderer {
 
     // Pass in Mario triangles:
     gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.positionBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, positionArr, gl.STREAM_DRAW);
-    gl.enableVertexAttribArray(this.marioProgram.positionBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, positionArr, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.positionLoc);
     gl.vertexAttribPointer(this.marioProgram.positionLoc,
                            3, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.colorBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STREAM_DRAW);
-    gl.enableVertexAttribArray(this.marioProgram.colorBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.colorLoc);
     gl.vertexAttribPointer(this.marioProgram.colorLoc,
                            3, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.normalBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, normalArr, gl.STREAM_DRAW);
-    gl.enableVertexAttribArray(this.marioProgram.normalBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, normalArr, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.normalLoc);
     gl.vertexAttribPointer(this.marioProgram.normalLoc,
                            3, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.uvBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, uvArr, gl.STREAM_DRAW);
-    gl.enableVertexAttribArray(this.marioProgram.uvBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, uvArr, gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(this.marioProgram.uvLoc);
     gl.vertexAttribPointer(this.marioProgram.uvLoc,
                            2, gl.FLOAT, false, 0, 0);
 

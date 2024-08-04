@@ -5,7 +5,7 @@
     <input type="file" id="romInput" onchange="openRomAndStart(event)">
 
     <canvas width="640" height="480" id="webrioCanvas"></canvas>
-    <div>Status: <div id="statusEl"></div></div>
+    <div>Status: <div style="max-width: 400px; word-break: break-all" id="statusEl"></div></div>
 
     <script src="vendor/gl-matrix.js"></script>
 
@@ -82,8 +82,18 @@
          let projection = Array(16).fill(0);
          let model = Array(16).fill(0);
 
+         const keysDown = {};
+
          window.requestAnimationFrame(function tick() {
-           const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0,
+           let stickX = 0.0;
+           let stickY = 0.0;
+           if ("ArrowLeft" in keysDown) { stickX -= 1.0; }
+           if ("ArrowRight" in keysDown) { stickX += 1.0; }
+           if ("ArrowUp" in keysDown) { stickY -= 1.0; }
+           if ("ArrowDown" in keysDown) { stickY += 1.0; }
+           const numTrianglesUsed = Webrio._webrio_tick(0, 0,
+                                                        stickX, stickY,
+                                                        0, 0, 0,
                                                         marioPositionPtr);
 
            // cameraRot += x0_axis * dt * 2;
@@ -114,6 +124,13 @@ projection: ${projection}
                               numTrianglesUsed);
 
            window.requestAnimationFrame(tick);
+         });
+
+         window.addEventListener('keydown', (e) => {
+           keysDown[e.key] = true;
+         });
+         window.addEventListener('keyup', (e) => {
+           delete keysDown[e.key];
          });
        };
        

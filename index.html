@@ -49,10 +49,28 @@
                              positionBufPtr, colorBufPtr,
                              normalBufPtr, uvBufPtr);
 
+         // Load Mario:
          const heapTex = new Uint8Array(Webrio.HEAPU8.buffer, heapTexPtr, heapTexLength);
          renderer.loadMarioTexture(heapTex,
                                    Webrio._webrio_get_sm64_texture_width(),
                                    Webrio._webrio_get_sm64_texture_height());
+
+         // Load world:
+         const surfaces = [];
+         const surfacesCount = Webrio._webrio_get_surfaces_count();
+         for (let i = 0; i < surfacesCount; i++) {
+           const verticesPtr = Webrio._malloc(4 * 9); // int32_t[3][3]
+           const verticesArr = new Int32Array(Webrio.HEAP32.buffer, verticesPtr, 4 * 9);
+           Webrio._webrio_get_surface_vertices(i, verticesPtr);
+
+           surfaces.push({
+             type: Webrio._webrio_get_surface_type(i),
+             force: Webrio._webrio_get_surface_force(i),
+             terrain: Webrio._webrio_get_surface_terrain(i),
+             vertices: verticesArr
+           });
+         }
+         renderer.loadSurfaces(surfaces);
 
          const marioPositionPtr = Webrio._malloc(sizeofFloat * 3);
          const marioPositionArr = new Float32Array(Webrio.HEAPF32.buffer, marioPositionPtr, 3);
@@ -62,6 +80,7 @@
 
          let view = Array(16).fill(0);
          let projection = Array(16).fill(0);
+         let model = Array(16).fill(0);
 
          window.requestAnimationFrame(function tick() {
            const numTrianglesUsed = Webrio._webrio_tick(0, 0, 0, 0, 0, 0, 0,
@@ -72,13 +91,12 @@
            cameraPos[1] = marioPositionArr[1] + 200.0;
            cameraPos[2] = marioPositionArr[2] + 1000.0 * Math.sin( cameraRot );
 
-           mat4.perspective(projection, 45.0, 640.0 / 480.0, 100.0, 20000.0);
+           const windowWidth = 640.0;
+           const windowHeight = 480.0;
+           mat4.perspective(projection, 45.0, windowWidth / windowHeight, 100.0, 20000.0);
            mat4.translate(view, view, cameraPos);
            mat4.lookAt(view, cameraPos, marioPositionArr, [0, 1, 0]);
-
-	   // glm_perspective( 45.0f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 100.0f, 20000.0f, projection );
-           // 	   glm_translate( view, (float*)camPos );
-           // 	   glm_lookat( (float*)camPos, (float*)marioState->position, (vec3){0,1,0}, view );
+           mat4.identity(model);
 
            statusEl.innerText = `
 numTrianglesUsed: ${numTrianglesUsed}
@@ -89,9 +107,12 @@ view: ${view}
 projection: ${projection}
            `;
 
-           renderer.draw(view, projection,
-                         positionArr, colorArr, normalArr, uvArr,
-                         numTrianglesUsed);
+           renderer.drawWorld(model, view, projection,
+                              positionArr, normalArr);
+
+           renderer.drawMario(view, projection,
+                              positionArr, colorArr, normalArr, uvArr,
+                              numTrianglesUsed);
 
            window.requestAnimationFrame(tick);
          });

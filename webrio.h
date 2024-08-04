@@ -17,4 +17,13 @@ int webrio_tick(float camLookX, float camLookZ,
 int webrio_get_sm64_texture_width();
 int webrio_get_sm64_texture_height();
 
+// These just pull from the test level in test/level.h and
+// test/level.c.
+size_t webrio_get_surfaces_count();
+int16_t webrio_get_surface_type(int surfaceIdx);
+int16_t webrio_get_surface_force(int surfaceIdx);
+uint16_t webrio_get_surface_terrain(int surfaceIdx);
+void webrio_get_surface_vertices(int surfaceIdx,
+                                 int32_t vertices[3][3]);
+
 #endif

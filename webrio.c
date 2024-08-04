@@ -52,3 +52,20 @@ int webrio_tick(// inputs:
 int webrio_get_sm64_texture_width() { return SM64_TEXTURE_WIDTH; }
 int webrio_get_sm64_texture_height() { return SM64_TEXTURE_HEIGHT; }
 
+// These just pull from the test level in test/level.h and
+// test/level.c.
+size_t webrio_get_surfaces_count() { return surfaces_count; }
+int16_t webrio_get_surface_type(int surfaceIdx) {
+    return surfaces[surfaceIdx].type;
+}
+int16_t webrio_get_surface_force(int surfaceIdx) {
+    return surfaces[surfaceIdx].force;
+}
+uint16_t webrio_get_surface_terrain(int surfaceIdx) {
+    return surfaces[surfaceIdx].terrain;
+}
+void webrio_get_surface_vertices(int surfaceIdx,
+                                 int32_t vertices[3][3]) {
+    memcpy(vertices, surfaces[surfaceIdx].vertices,
+           sizeof(int32_t) * 9);
+}

@@ -94,7 +94,6 @@ v2f vec3 v_worldPos;
         float brightness = smoothstep( .2, .3, surfy );
 
         color = vec4( (0.5 + 0.25 * brightness) * (.5+.5*v_normal), 1 );
-        color = vec4( 1, 0, 0, 1 );
     }
 
 #endif
@@ -235,13 +234,17 @@ export class Renderer {
       mesh.index[3*i+2] = 3*i+2;
     }
 
-    // TODO: load vertex array into GPU
+    const gl = this.gl;
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.worldProgram.positionBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, mesh.position, gl.DYNAMIC_DRAW);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.worldProgram.normalBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, mesh.normal, gl.DYNAMIC_DRAW);
   }
 
   // model, view, and projection are 16-element Float32Arrays (mat4).
-  // The arrs are flattened Float32Arrays.
-  drawWorld(model, view, projection,
-            positionArr, normalArr) {
+  drawWorld(model, view, projection) {
     const gl = this.gl;
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -260,14 +263,13 @@ export class Renderer {
                         false, projection);
 
     // Pass in world triangles:
+    // TODO: do we need to do this every frame?
     gl.bindBuffer(gl.ARRAY_BUFFER, this.worldProgram.positionBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, positionArr, gl.DYNAMIC_DRAW);
     gl.enableVertexAttribArray(this.worldProgram.positionLoc);
     gl.vertexAttribPointer(this.worldProgram.positionLoc,
                            3, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.worldProgram.normalBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, normalArr, gl.DYNAMIC_DRAW);
     gl.enableVertexAttribArray(this.worldProgram.normalLoc);
     gl.vertexAttribPointer(this.worldProgram.normalLoc,
                            3, gl.FLOAT, false, 0, 0);
@@ -315,6 +317,7 @@ export class Renderer {
                         false, projection);
 
     // Pass in Mario triangles:
+    // TODO: how much of this do we need to do every frame?
     gl.bindBuffer(gl.ARRAY_BUFFER, this.marioProgram.positionBuf);
     gl.bufferData(gl.ARRAY_BUFFER, positionArr, gl.DYNAMIC_DRAW);
     gl.enableVertexAttribArray(this.marioProgram.positionLoc);

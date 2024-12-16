@@ -39,6 +39,11 @@ jobs:
           sudo apt-get update -y -qq
           sudo apt-get install libsdl2-dev libglew-dev
 
+      - name: Build shared library
+        run: |
+          cd libsm64
+          make lib -j`nproc`
+
       - name: Build Webrio
         run: make webrio.js -e LIB_SM_PATH=./libsm64
 

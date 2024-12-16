@@ -38,7 +38,7 @@ jobs:
 
       - name: Build libsm64
         run: |
-          cd libsm64
+          cd ../libsm64
           emmake make CC=emcc
 
       - name: Build Webrio

@@ -42,7 +42,7 @@ jobs:
       - name: Build shared library
         run: |
           cd libsm64
-          make lib -j`nproc`
+          emmake make CC=emcc
 
       - name: Build Webrio
         run: make webrio.js -e LIB_SM_PATH=./libsm64

@@ -1,0 +1,50 @@
+name: Build Webrio
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: Build Webrio for ${{ matrix.identifier }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - identifier: emscripten
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Checkout libsm64
+        uses: actions/checkout@v4
+        with:
+            repository: 'libsm64/libsm64'
+            path: ~/aux/libsm64
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+
+      #- name: Set up MinGW
+      #  uses: egor-tensin/setup-mingw@v2
+
+      - name: Install dependencies
+        run: |
+          sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
+          sudo apt-get update -y -qq
+          sudo apt-get install libsdl2-dev libglew-dev
+
+      - name: Build Webrio
+        run: make webrio.js
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: Webrio_Demo
+          path: .

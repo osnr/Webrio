@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
             repository: 'libsm64/libsm64'
-            path: ../libsm64
+            path: ./libsm64
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -38,11 +38,11 @@ jobs:
 
       - name: Build libsm64
         run: |
-          cd ../libsm64
+          cd ./libsm64
           emmake make CC=emcc
 
       - name: Build Webrio
-        run: make webrio.js -e LIB_SM_PATH=../libsm64
+        run: make webrio.js -e LIB_SM_PATH=./libsm64
 
       - name: Upload build
         uses: actions/upload-artifact@v4
